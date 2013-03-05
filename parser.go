@@ -25,9 +25,7 @@ func (p *Parser) Parse(input io.Reader) Node {
 	}
 	p.tree = NewBranch("")
 	p.branch = p.tree
-	for line, err := in.ReadString('\n'); err != io.EOF;
-		line, err = in.ReadString('\n') {
-
+	for line, err := in.ReadString('\n'); err != io.EOF; line, err = in.ReadString('\n') {
 		if err == nil {
 			p.parseLine(line)
 		}
