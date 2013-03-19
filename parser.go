@@ -18,7 +18,7 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) Parse(input io.Reader) Node {
+func (p *Parser) Parse(input io.Reader) *Branch {
 	in := bufio.NewReader(input)
 	if in == nil {
 		return nil
@@ -99,11 +99,10 @@ func (p *Parser) parseLeaf(line string) {
 func (p *Parser) parseComment(line string) {
 	switch p.context {
 	case CommentContext:
-		p.leaf.AppendVal(line)
+		p.leaf.AppendValue(line)
 	default:
 		p.context = CommentContext
-		leaf := NewLeaf("#", line)
-		leaf.typ = CommentType
+		leaf := NewComment(line)
 		p.branch.Append(leaf)
 		p.leaf = leaf
 	}
@@ -112,7 +111,7 @@ func (p *Parser) parseComment(line string) {
 func (p *Parser) parseText(line string) {
 	switch p.context {
 	case LongLeafContext:
-		p.leaf.AppendVal(line)
+		p.leaf.AppendValue(line)
 	default:
 		if strings.TrimSpace(line) == "" { // ignore whitespace-only lines
 			break

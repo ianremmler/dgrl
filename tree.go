@@ -18,6 +18,10 @@ type Branch struct {
 	kids   []Node
 }
 
+func NewRoot() *Branch {
+	return NewBranch("")
+}
+
 func NewBranch(name string) *Branch {
 	return &Branch{
 		name: name,
@@ -110,7 +114,6 @@ type Leaf struct {
 	typ    int
 	key    string
 	val    string
-	isLong bool
 	parent *Branch
 }
 
@@ -118,7 +121,20 @@ func NewLeaf(key, val string) *Leaf {
 	return &Leaf{
 		key: key,
 		val: val,
+		typ: LeafType,
 	}
+}
+
+func NewLongLeaf(key, val string) *Leaf {
+	leaf := NewLeaf(key, val)
+	leaf.typ = LongLeafType
+	return leaf
+}
+
+func NewComment(val string) *Leaf {
+	leaf := NewLeaf("#", val)
+	leaf.typ = CommentType
+	return leaf
 }
 
 func (l *Leaf) String() string {
@@ -151,12 +167,9 @@ func (l *Leaf) SetParent(branch *Branch) { l.parent = branch }
 func (l *Leaf) Type() int       { return l.typ }
 func (l *Leaf) SetType(typ int) { l.typ = typ }
 
-func (l *Leaf) IsLong() bool          { return l.isLong }
-func (l *Leaf) SetIsLong(isLong bool) { l.isLong = isLong }
-
 func (l *Leaf) Key() string       { return l.key }
 func (l *Leaf) SetKey(key string) { l.key = key }
 
-func (l *Leaf) Val() string          { return l.val }
-func (l *Leaf) SetVal(val string)    { l.val = val }
-func (l *Leaf) AppendVal(val string) { l.val += val }
+func (l *Leaf) Value() string          { return l.val }
+func (l *Leaf) SetValue(val string)    { l.val = val }
+func (l *Leaf) AppendValue(val string) { l.val += val }
