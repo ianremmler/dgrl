@@ -9,7 +9,7 @@ type Node interface {
 	SetParent(*Branch)
 	Type() int
 	String() string
-	ToJson() string
+	ToJSON() string
 }
 
 type Branch struct {
@@ -54,10 +54,10 @@ func (b *Branch) String() string {
 	return str
 }
 
-func (b *Branch) ToJson() string {
+func (b *Branch) ToJSON() string {
 	str := "{ \"" + b.name + "\": [ "
 	for i, kid := range b.kids {
-		str += kid.ToJson()
+		str += kid.ToJSON()
 		if i < len(b.kids)-1 {
 			str += ","
 		}
@@ -155,7 +155,7 @@ func (l *Leaf) String() string {
 	return str
 }
 
-func (l *Leaf) ToJson() string {
+func (l *Leaf) ToJSON() string {
 	val := strings.Replace(l.val, "\n", "\\n", -1)
 	val = strings.Replace(val, "\"", "\\\"", -1)
 	return "{ \"" + l.key + "\": \"" + val + "\" }"

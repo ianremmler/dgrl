@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	doJson := flag.Bool("j", false, "Export to JSON")
+	doJSON := flag.Bool("j", false, "Export to JSON")
 	flag.Parse()
 
 	if flag.NArg() > 0 {
@@ -19,8 +19,8 @@ func main() {
 	parser := dgrl.NewParser()
 	tree := parser.Parse(os.Stdin)
 	switch {
-	case *doJson:
-		fmt.Println(tree.ToJson())
+	case *doJSON:
+		fmt.Println(tree.ToJSON())
 	default:
 		fmt.Print(tree)
 	}
