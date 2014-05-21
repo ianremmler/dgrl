@@ -30,7 +30,7 @@ func (p *Parser) Parse(input io.Reader) *Branch {
 			p.parseLine(line)
 		}
 	}
-	p.parseLine("::\n") // force dangling leaf to terminate
+	p.parseLine("-\n") // force dangling leaf to terminate
 	return p.tree
 }
 
@@ -77,20 +77,23 @@ func (p *Parser) parseBranch(line string) {
 func (p *Parser) parseLeaf(line string) {
 	line = line[1:]
 	idx := strings.Index(line, ":")
-	if idx < 0 { // didn't find end of key
-		return
+	hasSuffix := (idx >= 0)
+	if idx < 0 { // just a key
+		idx = len(line) - 1
+		if idx < 0 {
+			idx = 0
+		}
 	}
-	key, val := line[:idx], line[idx+1:]
-	if key == "" && strings.TrimSpace(val) == "" { // drop empty leaf
+	key, val := strings.TrimSpace(line[:idx]), strings.TrimSpace(line[idx+1:])
+	if key == "" && val == "" { // drop empty leaf
 		return
 	}
 	typ := LeafType
-	if strings.HasPrefix(val, ":") {
-		val = val[1:]
+	if hasSuffix && val == "" {
 		typ = LongLeafType
 		p.context = LongLeafContext
 	}
-	leaf := NewLeaf(key, strings.TrimSpace(val))
+	leaf := NewLeaf(key, val)
 	leaf.typ = typ
 	p.branch.Append(leaf)
 	p.leaf = leaf
@@ -116,7 +119,7 @@ func (p *Parser) parseText(line string) {
 		if strings.TrimSpace(line) == "" { // ignore whitespace-only lines
 			break
 		}
-		leaf := NewLeaf(".", line)
+		leaf := NewLeaf("", line)
 		leaf.typ = TextType
 		p.branch.Append(leaf)
 		p.leaf = leaf
@@ -129,7 +132,7 @@ func lineType(line string) int {
 	switch {
 	case strings.HasPrefix(line, "="):
 		typ = BranchType
-	case strings.HasPrefix(line, ":"):
+	case strings.HasPrefix(line, "-"):
 		typ = LeafType
 	case strings.HasPrefix(line, "#"):
 		typ = CommentType

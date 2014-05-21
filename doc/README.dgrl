@@ -2,13 +2,13 @@ Doggerel (dgrl for short) is a language for representing structured text
 without getting in your way.  It is designed to be human- and machine-friendly.
 
 A doggerel document is represented as a tree whose leaves are key/value pairs.
-The order of nodes is always maintained.  Duplicate keys are allowed.
+Order is maintained and duplicate keys are allowed.
 
 Doggerel is line oriented.  All syntactic elements begin with a special character
 at the beginning of a line.
 
-Plain text, like this, is represented as a special "bare" multiline leaf node
-(see below) with the special key ".".
+Plain text, like this, is represented as a special bare multiline leaf node
+with an empty key.
 
 = Branches
 
@@ -34,42 +34,34 @@ Now we're back at the root level 0 branch.
 = Leaves
 
 A leaf is a key/value pair.  The key and value are text.  A leaf may be single
-line or multiline.  A single line leaf has the form:
+line or multiline.  The leaf begins with a dash, followed by the key text.  If
+there is a value, the key is followed by a colon.  For single line leaves, the
+value is the text from the colon to the end of line.
 
-:key text: value text
+- key text: value text
+- just a key
 
-Everything between the colons is the key.  Everything after the second colon
-and optional whitespace is the value.
+For multiline leaves, a colon after the key ends the first line, and the value
+begins with the next line and ends when another syntactic element is found.
+Leading and trailing blank lines are discarded.  Otherwise, the text is
+retained literally.  No wrapping or filtering is done.
 
-Adding an extra colon to a leaf key introduces a multiline leaf.  Leading and
-trailing blank lines are discarded.  Otherwise, the text is retained literally.
-No wrapping or filtering is done.  Another syntactic element terminates the
-leaf.
-
-:key text::
+- key text:
 
 value text
 more value text
 
-:Something else: This terminates the above multiline leaf.
+- Something else: This terminates the above multiline leaf.
 
 In order to have a (possibly bare) multiline leaf adjacent to a bare leaf, a
-special type of leaf with empty key and value can be used to disambiguate.
+line consisting only of a hyphen as the first character can be used to
+disambiguate.
 
-::
+-
 
 These are not retained in the tree.  They are only needed in input,
 and are only generated in output, to disambiguate nodes.
 
-A leaf key can be empty.
-
-:: empty key
-
-:::
-
-empty
-key
-
 # Lines beginning with "#" are comments.  Contiguous comment lines are grouped
 # into a special form of multiline leaf whose key is "#".  Comment leaves are
-# retained in the tree, and can optionally be stripped when the tree is output.
+# retained in the tree

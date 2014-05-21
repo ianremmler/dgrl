@@ -46,7 +46,7 @@ func (b *Branch) String() string {
 			str += "\n"
 		}
 		if typ == TextType && (prevTyp == TextType || prevTyp == LongLeafType) {
-			str += "::\n\n"
+			str += "-\n\n"
 		}
 		str += kid.String()
 		prevTyp = typ
@@ -141,14 +141,17 @@ func (l *Leaf) String() string {
 	str := ""
 	switch l.typ {
 	case LeafType:
-		str += ":" + l.key + ":"
+		str += "-"
+		if l.key != "" {
+			str += " " + l.key
+		}
 		if l.val != "" {
-			str += " " + l.val
+			str += ": " + l.val
 		}
 		str += "\n"
 	case LongLeafType:
-		str = ":" + l.key + "::\n\n"
-		fallthrough
+		str = "- " + l.key + ":\n\n"
+		str += l.val
 	case TextType, CommentType:
 		str += l.val
 	}
