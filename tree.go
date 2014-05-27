@@ -8,13 +8,15 @@ type Node interface {
 	Parent() *Branch
 	SetParent(*Branch)
 	Type() int
+	Key() string
+	SetKey(key string)
 	String() string
 	ToJSON() string
 }
 
 type Branch struct {
 	parent *Branch
-	name   string
+	key    string
 	kids   []Node
 }
 
@@ -22,9 +24,9 @@ func NewRoot() *Branch {
 	return NewBranch("")
 }
 
-func NewBranch(name string) *Branch {
+func NewBranch(key string) *Branch {
 	return &Branch{
-		name: name,
+		key:  key,
 		kids: []Node{},
 	}
 }
@@ -34,7 +36,7 @@ func (b *Branch) String() string {
 	prevTyp := NoType
 	lvl := b.Level()
 	if lvl > 0 {
-		str = strings.Repeat("=", lvl) + " " + b.name + "\n"
+		str = strings.Repeat("=", lvl) + " " + b.key + "\n"
 		prevTyp = CommentType // fake type to get a newline between branch and first kid
 	}
 	for _, kid := range b.kids {
@@ -55,7 +57,7 @@ func (b *Branch) String() string {
 }
 
 func (b *Branch) ToJSON() string {
-	str := "{ \"" + b.name + "\": [ "
+	str := "{ \"" + b.key + "\": [ "
 	for i, kid := range b.kids {
 		str += kid.ToJSON()
 		if i < len(b.kids)-1 {
@@ -79,8 +81,8 @@ func (b *Branch) Level() int {
 	return i
 }
 
-func (b *Branch) Name() string        { return b.name }
-func (b *Branch) SetName(name string) { b.name = name }
+func (b *Branch) Key() string       { return b.key }
+func (b *Branch) SetKey(key string) { b.key = key }
 
 func (b *Branch) Parent() *Branch          { return b.parent }
 func (b *Branch) SetParent(parent *Branch) { b.parent = parent }
