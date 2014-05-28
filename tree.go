@@ -1,17 +1,22 @@
 package dgrl
 
 import (
+	"bufio"
+	"errors"
+	"io"
 	"strings"
 )
 
 type Node interface {
 	Parent() *Branch
-	SetParent(*Branch)
+	SetParent(parent *Branch)
 	Type() int
 	Key() string
 	SetKey(key string)
 	String() string
 	ToJSON() string
+
+	write(w *bufio.Writer)
 }
 
 type Branch struct {
@@ -54,6 +59,47 @@ func (b *Branch) String() string {
 		prevTyp = typ
 	}
 	return str
+}
+
+func (b *Branch) Write(w io.Writer) error {
+	buf := bufio.NewWriter(w)
+	if buf == nil {
+		return errors.New("error creating bufio.Writer")
+	}
+	b.write(buf)
+	buf.Flush()
+	return nil
+}
+
+func (b *Branch) write(w *bufio.Writer) {
+	prevTyp := NoType
+	lvl := b.Level()
+	if lvl > 0 {
+		for i := 0; i < lvl; i++ {
+			w.WriteByte('=')
+		}
+		w.WriteByte(' ')
+		w.WriteString(b.key)
+		prevTyp = CommentType // fake type to get a newline between branch and first kid
+	}
+	for _, kid := range b.kids {
+		typ := kid.Type()
+		if prevTyp == BranchType && typ != BranchType {
+			w.WriteByte('\n')
+			for i := 0; i < lvl+1; i++ {
+				w.WriteByte('=')
+			}
+			w.WriteByte('\n')
+		}
+		if prevTyp != NoType && !(typ == LeafType && prevTyp == LeafType) {
+			w.WriteByte('\n')
+		}
+		if typ == TextType && (prevTyp == TextType || prevTyp == LongLeafType) {
+			w.WriteString("-\n\n")
+		}
+		kid.write(w)
+		prevTyp = typ
+	}
 }
 
 func (b *Branch) ToJSON() string {
@@ -158,6 +204,29 @@ func (l *Leaf) String() string {
 		str += l.val
 	}
 	return str
+}
+
+func (l *Leaf) write(w *bufio.Writer) {
+	switch l.typ {
+	case LeafType:
+		w.WriteByte('-')
+		if l.key != "" {
+			w.WriteByte(' ')
+			w.WriteString(l.key)
+		}
+		if l.val != "" {
+			w.WriteString(": ")
+			w.WriteString(l.val)
+		}
+		w.WriteByte('\n')
+	case LongLeafType:
+		w.WriteString("- ")
+		w.WriteString(l.key)
+		w.WriteString(":\n\n")
+		w.WriteString(l.val)
+	case TextType, CommentType:
+		w.WriteString(l.val)
+	}
 }
 
 func (l *Leaf) ToJSON() string {
