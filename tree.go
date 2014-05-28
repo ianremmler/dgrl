@@ -80,6 +80,7 @@ func (b *Branch) write(w *bufio.Writer) {
 		}
 		w.WriteByte(' ')
 		w.WriteString(b.key)
+		w.WriteByte('\n')
 		prevTyp = CommentType // fake type to get a newline between branch and first kid
 	}
 	for _, kid := range b.kids {
@@ -174,12 +175,21 @@ func NewLeaf(key, val string) *Leaf {
 }
 
 func NewLongLeaf(key, val string) *Leaf {
+	val = strings.TrimRight(val, "\n") + "\n"
 	leaf := NewLeaf(key, val)
 	leaf.typ = LongLeafType
 	return leaf
 }
 
+func NewText(val string) *Leaf {
+	val = strings.TrimRight(val, "\n") + "\n"
+	leaf := NewLeaf("", val)
+	leaf.typ = TextType
+	return leaf
+}
+
 func NewComment(val string) *Leaf {
+	val = strings.TrimRight(val, "\n") + "\n"
 	leaf := NewLeaf("#", val)
 	leaf.typ = CommentType
 	return leaf
