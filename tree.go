@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Node is the interface common to branches and leaves
 type Node interface {
 	Parent() *Branch
 	SetParent(parent *Branch)
@@ -19,16 +20,19 @@ type Node interface {
 	write(w *bufio.Writer)
 }
 
+// Branch is a branch tree node
 type Branch struct {
 	parent *Branch
 	key    string
 	kids   []Node
 }
 
+// NewRoot constructs a top level Branch instance
 func NewRoot() *Branch {
 	return NewBranch("")
 }
 
+// NewBranch constructs a Branch instance
 func NewBranch(key string) *Branch {
 	return &Branch{
 		key:  key,
@@ -36,6 +40,7 @@ func NewBranch(key string) *Branch {
 	}
 }
 
+// String returns the text represenation of the Branch
 func (b *Branch) String() string {
 	str := ""
 	prevTyp := NoType
@@ -61,6 +66,7 @@ func (b *Branch) String() string {
 	return str
 }
 
+// Write writes the text reperesentation of the Branch to an io.Writer
 func (b *Branch) Write(w io.Writer) error {
 	buf := bufio.NewWriter(w)
 	if buf == nil {
@@ -103,6 +109,7 @@ func (b *Branch) write(w *bufio.Writer) {
 	}
 }
 
+// ToJSON returns a JSON representation of the Branch
 func (b *Branch) ToJSON() string {
 	str := "{ \"" + b.key + "\": [ "
 	for i, kid := range b.kids {
@@ -116,10 +123,12 @@ func (b *Branch) ToJSON() string {
 	return str
 }
 
+// Type returns the node type of Branch
 func (b *Branch) Type() int {
 	return BranchType
 }
 
+// Level returns the nesting level of the Branch
 func (b *Branch) Level() int {
 	i := 0
 	for ; b.parent != nil; i++ {
@@ -137,11 +146,13 @@ func (b *Branch) SetParent(parent *Branch) { b.parent = parent }
 func (b *Branch) NumKids() int { return len(b.kids) }
 func (b *Branch) Kids() []Node { return b.kids }
 
+// Append appends a node to the Branch
 func (b *Branch) Append(node Node) {
 	b.kids = append(b.kids, node)
 	node.SetParent(b)
 }
 
+// First returns the first child node in the Branch
 func (b *Branch) First() Node {
 	if len(b.kids) == 0 {
 		return nil
@@ -149,6 +160,7 @@ func (b *Branch) First() Node {
 	return b.kids[0]
 }
 
+// Insert inserts a node into the branch at the given position
 func (b *Branch) Insert(node Node, pos int) bool {
 	if pos > len(b.kids) {
 		return false
@@ -159,6 +171,7 @@ func (b *Branch) Insert(node Node, pos int) bool {
 	return true
 }
 
+// Leaf is a leaf tree node
 type Leaf struct {
 	typ    int
 	key    string
@@ -166,6 +179,7 @@ type Leaf struct {
 	parent *Branch
 }
 
+// NewLeaf constructs a Leaf instance
 func NewLeaf(key, val string) *Leaf {
 	return &Leaf{
 		key: key,
@@ -174,6 +188,7 @@ func NewLeaf(key, val string) *Leaf {
 	}
 }
 
+// NewLongLeaf constructs a long type Leaf
 func NewLongLeaf(key, val string) *Leaf {
 	val = strings.TrimRight(val, "\n") + "\n"
 	leaf := NewLeaf(key, val)
@@ -181,6 +196,7 @@ func NewLongLeaf(key, val string) *Leaf {
 	return leaf
 }
 
+// NewLongLeaf constructs a text type Leaf
 func NewText(val string) *Leaf {
 	val = strings.TrimRight(val, "\n") + "\n"
 	leaf := NewLeaf("", val)
@@ -188,6 +204,7 @@ func NewText(val string) *Leaf {
 	return leaf
 }
 
+// NewLongLeaf constructs a comment type Leaf
 func NewComment(val string) *Leaf {
 	val = strings.TrimRight(val, "\n") + "\n"
 	leaf := NewLeaf("#", val)
@@ -195,6 +212,7 @@ func NewComment(val string) *Leaf {
 	return leaf
 }
 
+// String returns the text representation of the Leaf
 func (l *Leaf) String() string {
 	str := ""
 	switch l.typ {
@@ -239,6 +257,7 @@ func (l *Leaf) write(w *bufio.Writer) {
 	}
 }
 
+// ToJSON returns a JSON representation of the Leaf
 func (l *Leaf) ToJSON() string {
 	val := strings.Replace(l.val, "\n", "\\n", -1)
 	val = strings.Replace(val, "\"", "\\\"", -1)

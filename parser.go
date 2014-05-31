@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Parser parses Doggerel text into a node tree
 type Parser struct {
 	tree    *Branch
 	branch  *Branch
@@ -14,10 +15,12 @@ type Parser struct {
 	context int
 }
 
+// NewParser constructs a Parser instance
 func NewParser() *Parser {
 	return &Parser{}
 }
 
+// Parse parses input into a tree of nodes
 func (p *Parser) Parse(input io.Reader) *Branch {
 	in := bufio.NewReader(input)
 	if in == nil {
