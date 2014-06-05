@@ -165,9 +165,7 @@ func (b *Branch) Insert(node Node, pos int) bool {
 	if pos > len(b.kids) {
 		return false
 	}
-	kids := append(b.kids[:pos], node)
-	kids = append(kids, b.kids[pos:]...)
-	b.kids = kids
+	b.kids = append(b.kids[:pos], append([]Node{node}, b.kids[pos:]...)...)
 	return true
 }
 
