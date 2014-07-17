@@ -18,6 +18,7 @@ type Node interface {
 	ToJSON() string
 
 	write(w *bufio.Writer)
+	writeJSON(w *bufio.Writer)
 }
 
 // Branch is a branch tree node
@@ -121,6 +122,31 @@ func (b *Branch) ToJSON() string {
 	}
 	str += "] }"
 	return str
+}
+
+// WriteJSON writes a JSON representation of the Branch to an io.Writer
+func (b *Branch) WriteJSON(w io.Writer) error {
+	buf := bufio.NewWriter(w)
+	if buf == nil {
+		return errors.New("error creating bufio.Writer")
+	}
+	b.writeJSON(buf)
+	buf.Flush()
+	return nil
+}
+
+func (b *Branch) writeJSON(w *bufio.Writer) {
+	w.WriteString("{ \"")
+	w.WriteString(b.key)
+	w.WriteString("\": [ ")
+	for i, kid := range b.kids {
+		kid.writeJSON(w)
+		if i < len(b.kids)-1 {
+			w.WriteByte(',')
+		}
+		w.WriteByte(' ')
+	}
+	w.WriteString("] }")
 }
 
 // Type returns the node type of Branch
@@ -260,6 +286,16 @@ func (l *Leaf) ToJSON() string {
 	val := strings.Replace(l.val, "\n", "\\n", -1)
 	val = strings.Replace(val, "\"", "\\\"", -1)
 	return "{ \"" + l.key + "\": \"" + val + "\" }"
+}
+
+func (l *Leaf) writeJSON(w *bufio.Writer) {
+	val := strings.Replace(l.val, "\n", "\\n", -1)
+	val = strings.Replace(val, "\"", "\\\"", -1)
+	w.WriteString("{ \"")
+	w.WriteString(l.key)
+	w.WriteString("\": \"")
+	w.WriteString(val)
+	w.WriteString("\" }")
 }
 
 func (l *Leaf) Parent() *Branch          { return l.parent }
